@@ -1,0 +1,52 @@
+#pragma kernel Main
+
+struct Particle
+{
+    float2 position;
+    float2 velocity;
+};
+
+#define SIMULATION_BLOCK_SIZE 256
+
+#include "Packages/jp.keijiro.noiseshader/Shader/ClassicNoise3D.hlsl"
+inline float2 CurlNoise(float2 pos, float time)
+{
+    const float epsilon = 1e-3;
+    const float3 dx = float3(epsilon, 0.0, 0.0);
+    const float3 dy = float3(0.0, epsilon, 0.0);
+
+    const float3 p = float3(pos, time);
+
+    const float dpdx = ClassicNoise(p + dx) - ClassicNoise(p - dx);
+    const float dpdy = ClassicNoise(p + dy) - ClassicNoise(p - dy);
+
+    return float2(dpdy, -dpdx) / (2.0 * epsilon);
+}
+
+RWStructuredBuffer<Particle> _ParticleBuffer;
+
+int _NumParticles;
+float _Time;
+float _DeltaTime;
+float3 _Acceleration; // x, y, drag
+float3 _NoiseParams;  // amplitude, position scale, time scale
+
+[numthreads(SIMULATION_BLOCK_SIZE, 1, 1)]
+void Main(uint3 DTid : SV_DispatchThreadID)
+{
+    const uint P_ID = DTid.x;
+    
+    if (P_ID >= (uint)_NumParticles) return;
+
+    Particle p = _ParticleBuffer[P_ID];
+
+    // position
+    p.position += p.velocity * _DeltaTime;
+
+    // velocity
+    p.velocity *= 1 - _Acceleration.z;
+    p.velocity += _Acceleration.xy * _DeltaTime;
+	p.velocity += CurlNoise(p.position * _NoiseParams.y, _Time * _NoiseParams.z) * _NoiseParams.x;
+
+    _ParticleBuffer[P_ID] = p;
+}

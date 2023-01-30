@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: b4f303c09eeeddb46a4593295543ab3e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _particleCS: {fileID: 7200000, guid: 25c0008687238ec45979f12072282950, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
