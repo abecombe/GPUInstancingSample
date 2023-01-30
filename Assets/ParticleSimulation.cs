@@ -11,18 +11,26 @@ public class ParticleSimulation : MonoBehaviour
         public Vector2 Velocity;
     }
 
-    [SerializeField] protected ComputeShader _particleCS;
     [SerializeField] protected int _numParticles;
+    [SerializeField] protected ComputeShader _particleCS;
 
     protected ComputeBuffer _particleBuffer;
     const int SIMULATION_BLOCK_SIZE = 256;
 
+    [Header("Simulation")]
     [SerializeField] protected Vector2 _acceleration = Vector2.down * 9.8f;
     [SerializeField, Range(0, 4)] protected float _drag = 2.5f;
 
+    [Space()]
     [SerializeField] protected float _noiseAmplitude = 1f;
     [SerializeField] protected float _noisePositionScale = 1f;
     [SerializeField] protected float _noiseTimeScale = 1f;
+
+    [Header("Rendering")]
+    [SerializeField] protected Material _particleMat;
+    [SerializeField] protected Texture2D _particleTex;
+    [SerializeField] protected Color _color;
+    [SerializeField] protected float _size;
 
     protected void InitBuffer()
     {
@@ -60,7 +68,11 @@ public class ParticleSimulation : MonoBehaviour
     }
     protected void RenderParticle()
     {
-        
+        _particleMat.SetBuffer("_ParticleBuffer", _particleBuffer);
+        _particleMat.SetTexture("_ParticleTex", _particleTex);
+        _particleMat.SetColor("_Color", _color);
+        _particleMat.SetFloat("_Size", _size);
+        Graphics.DrawProcedural(_particleMat, new Bounds(Vector3.zero, Vector3.one * 10000), MeshTopology.Points, _numParticles);
     }
 
 
