@@ -7,32 +7,25 @@ Shader "Simulation/ParticleRenderer"
 	struct v2g
 	{
 		float3 position : TEXCOORD0;
-		float4 col : TEXCOORD1;
+		float4 color : TEXCOORD1;
 		float  size : TEXCOORD2;
 	};
 	struct g2f
 	{
 		float4 position : POSITION;
 		float2 texcoord : TEXCOORD0;
-		float4 col : TEXCOORD1;
+		float4 color : TEXCOORD1;
 	};
 
 	struct gin
 	{
-		float3 pos;
+		float3 position;
 		float size;
-		float4 col;
+		float4 color;
 	};
 
 	#define VertexIn gin
 	#define VertexOut g2f
-	void UpdateVertex(in VertexIn vin, inout VertexOut o)
-	{
-		o.position = mul(UNITY_MATRIX_P, o.position);
-		// o.position =  UnityObjectToClipPos(o.position);
-		o.col = vin.col;
-	}
-
 	#include "GeometryQuad.hlsl"
 
 	StructuredBuffer<Particle> _ParticleBuffer;
@@ -48,8 +41,8 @@ Shader "Simulation/ParticleRenderer"
 		v2g o = (v2g)0;
 		Particle p = _ParticleBuffer[id];
 
-		o.position = UnityObjectToViewPos(float4(p.position, 1.0, 1.0)).xyz;
-		o.col = _Color;
+		o.position = float3(p.position, 0);
+		o.color = _Color;
 		o.size = _Size;
 		return o;
 	}
@@ -63,11 +56,11 @@ Shader "Simulation/ParticleRenderer"
 		float size = p[0].size;
 		if (size > 0)
 		{
-			float3 pos = p[0].position;
-			float4 col = p[0].col;
+			float3 position = p[0].position;
+			float4 color = p[0].color;
 			VertexIn vin;
-			vin.pos = pos;
-			vin.col = col;
+			vin.position = position;
+			vin.color = color;
 			vin.size = size;
 			AddQuad(vin, outStream);
 		}
@@ -78,7 +71,7 @@ Shader "Simulation/ParticleRenderer"
 	// --------------------------------------------------------------------
 	float4 frag(g2f i) : SV_Target
 	{
-		return tex2D(_ParticleTex, i.texcoord.xy) * i.col;
+		return tex2D(_ParticleTex, i.texcoord.xy) * i.color;
 	}
 
 	ENDCG
@@ -87,7 +80,6 @@ Shader "Simulation/ParticleRenderer"
 	{
 		Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
 
-		Cull Back
 		ZWrite Off
 		Blend SrcAlpha One
 

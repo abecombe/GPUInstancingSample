@@ -50,7 +50,7 @@ public class ParticleSimulation : MonoBehaviour
 
         int id = cs.FindKernel("Main");
 
-        int threadGroupSize = Mathf.CeilToInt(_numParticles / SIMULATION_BLOCK_SIZE);
+        int threadGroupSize = Mathf.CeilToInt((float)_numParticles / SIMULATION_BLOCK_SIZE);
 
         cs.SetInt("_NumParticles", _numParticles);
 
@@ -58,6 +58,7 @@ public class ParticleSimulation : MonoBehaviour
         cs.SetFloat("_DeltaTime", Time.deltaTime);
 
         var drag = Mathf.Exp(-_drag * Time.deltaTime);
+        Debug.Log(Time.deltaTime);
         var acceleration = new Vector3(_acceleration.x, _acceleration.y, drag);
         cs.SetVector("_Acceleration", acceleration);
         cs.SetVector("_NoiseParams", new Vector3(_noiseAmplitude, _noisePositionScale, _noiseTimeScale));
